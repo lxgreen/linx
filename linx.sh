@@ -13,7 +13,7 @@ EXTRACT_DEPENDENCIES="jq -r '(.dependencies | select(. != null) | to_entries[] |
 
 SELECT_TARGET_PREVIEW_COMMAND="${DOES_PACKAGE_JSON_EXIST} && ($EXTRACT_NAME_VERSION; $ECHO_DEPENDENCIES_HEADER; $EXTRACT_DEPENDENCIES)"
 
-IFS=: read target < <(
+IFS=: read TARGET_PATH < <(
 find . -type d | fzf \
   --prompt 'Repos> ' \
   --header 'Select target package (the one you work on)' \
@@ -23,16 +23,17 @@ find . -type d | fzf \
 
 if [ -n "${target}" ]; then
 
-  echo $target > ./target-path
+  echo $TARGET_PATH > ./target-path
   readonly TARGET_PACKAGE=$(cat ./target-package)
   readonly TARGET_DEPENDENCIES=$(cat ./target-dependencies)
 
   IS_MONOREPO="[ -f {}/package.json ] && [ -d {}/packages ]"
 
-  FILTER_PACKAGE_JSON="find {} -type f -name package.json"
-  EXTRACT_DEPENDENCY_NAME_VERSION="jq -r '. | (.name) + \"@\" + (.version)'"
+  SCAN_PACKAGE_JSON_IN_PACKAGES="find {}/packages -type f -name package.json"
 
-  EXTRACT_MONOREPO_PACKAGES="find {}/packages -type f -name package.json -print0 | xargs -0 jq -r '.name | select(. != null)'"
+  EXTRACT_DEPENDENCY_NAME="jq -r '.name | select(. != null)'"
+
+  EXTRACT_MONOREPO_PACKAGES="${SCAN_PACKAGE_JSON_IN_PACKAGES} -print0 | xargs -0 ${EXTRACT_DEPENDENCY_NAME}"
 
   ECHO_MONOREPO_HEADER='echo "\nMonorepo packages:\n"'
 
