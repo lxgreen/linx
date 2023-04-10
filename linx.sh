@@ -33,7 +33,7 @@ FIND_PACKAGE_ROOT_FILTER="( -name node_modules -o -name .git -o -name .vscode -o
 GREP_PACKAGE_JSON='ls -1 "{}" | grep -q "package.json"'
 
 SELECT_TARGET_PREVIEW_COMMAND="${DOES_PACKAGE_JSON_EXIST} && ($EXTRACT_NAME_VERSION | tee ./target-package; $ECHO_DEPENDENCIES_HEADER; $EXTRACT_DEPENDENCIES | tee ./target-dependencies)"
-SELECT_SOURCE_PREVIEW_COMMAND="${DOES_PACKAGE_JSON_EXIST} && ($EXTRACT_NAME_VERSION | tee ./source-package; $ECHO_DEPENDENCIES_HEADER; $EXTRACT_DEPENDENCIES | tee ./source-dependencies)"
+SELECT_SOURCE_PREVIEW_COMMAND="${DOES_PACKAGE_JSON_EXIST} && ($EXTRACT_NAME_VERSION; $ECHO_DEPENDENCIES_HEADER; $EXTRACT_DEPENDENCIES)"
 
 find . -type d $FIND_PACKAGE_ROOT_FILTER -o -maxdepth $MAXDEPTH -type d -exec sh -c "$GREP_PACKAGE_JSON" ';' -print | fzf \
   --prompt 'Repos> ' \
@@ -70,8 +70,8 @@ if [ -s ./target-path ]; then
 
     if [ -s ./source-paths ]; then
 
-      while read -r source_paths; do
-        source_package=$(cat ./source-package)
+      while read -r source_path; do
+        source_package=$(jq -r '.name' "$source_path/package.json")
         echo "Linking $source_package to $TARGET_PACKAGE"
         # cd $source_path && yarn link
         # cd $TARGET_PATH && yarn link $source_package
