@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # `linx` is cross-[mono]repo npm package linker for local development in style.
-# It allows to automate the `yarn link` between packages that reside in different repos.
+# It allows to automate the `yarn link` between packages that reside in different monorepos.
 
 # depends on fzf, jq, and yarn
 tools=("fzf" "jq" "yarn")
