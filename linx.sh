@@ -4,7 +4,7 @@
 # It allows to automate the `yarn link` between packages that reside in different monorepos.
 
 # depends on fzf, jq, and yarn
-tools=("fzf" "jq" "yarn")
+tools=("fzf" "jq")
 
 # Check if Homebrew is installed
 if ! command -v brew >/dev/null 2>&1; then
@@ -25,12 +25,9 @@ echo "All prerequisites are met, proceeding..."
 EXTRACT_NAME="jq -r '. | .name' {}/package.json"
 ECHO_DEPENDENCIES_HEADER='echo "\nDependencies:\n"'
 EXTRACT_DEPENDENCIES="jq -r '(.dependencies | select(. != null) | to_entries[] | join(\"@\"))' {}/package.json"
-
 MAXDEPTH=3
-
 FIND_PACKAGE_ROOT_FILTER="( -name node_modules -o -name .git -o -name .vscode -o -name .idea -o -name .yarn -o -name .husky -o -name .github ) -prune"
 GREP_PACKAGE_JSON='ls -1 "{}" | grep -q "package.json"'
-
 SELECT_TARGET_PREVIEW_COMMAND="($EXTRACT_NAME | tee /tmp/target-package; $ECHO_DEPENDENCIES_HEADER; $EXTRACT_DEPENDENCIES | tee /tmp/target-dependencies)"
 SELECT_SOURCE_PREVIEW_COMMAND="($EXTRACT_NAME; $ECHO_DEPENDENCIES_HEADER; $EXTRACT_DEPENDENCIES)"
 
@@ -73,8 +70,8 @@ if [ -s /tmp/target-path ]; then
       while read -r source_path; do
         source_package=$(jq -r '.name' "$source_path/package.json")
         echo "Linking $source_package to $TARGET_PACKAGE"
-        # cd $source_path && yarn link
-        # cd $TARGET_PATH && yarn link $source_package
+        cd $source_path && YARN_IGNORE_PATH=1 yarn link
+        cd $TARGET_PATH && YARN_IGNORE_PATH=1 yarn link $source_package
       done < /tmp/source-paths
 
       echo "Done linking dependencies"
